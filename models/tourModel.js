@@ -1,64 +1,98 @@
 const mongoose = require('mongoose');
-const tourSchema = new mongoose.Schema({
-  name: {
-    type: String,
-    required: [true, 'A tour must have name'],
-    trim: true,
-    unique: true,
+const slugify = require('slugify');
+const tourSchema = new mongoose.Schema(
+  {
+    name: {
+      type: String,
+      required: [true, 'A tour must have name'],
+      trim: true,
+      unique: true,
+    },
+    slug: {
+      type: String,
+    },
+    duration: {
+      type: Number,
+      required: [true, 'A tour must have duration'],
+    },
+    maxGroupSize: {
+      type: Number,
+      required: [true, 'A tour must have max group size'],
+    },
+    difficulty: {
+      type: String,
+      required: [true, 'A tour must have difficulty'],
+    },
+    ratingAverage: {
+      type: Number,
+      default: 4.5,
+    },
+    ratingQuantity: {
+      type: Number,
+      default: 0,
+    },
+    price: {
+      type: Number,
+      required: [true, 'A tour must have price'],
+    },
+    priceDiscount: {
+      type: Number,
+    },
+    summary: {
+      type: String,
+      trim: true,
+      required: [true, 'A tour must have summery'],
+    },
+    description: {
+      type: String,
+      trim: true,
+      required: [true, 'A tour must have description'],
+    },
+    imageCover: {
+      type: String,
+      required: [true, 'A tour must have image cover'],
+    },
+    images: {
+      type: [String],
+    },
+    createAt: {
+      type: Date,
+      default: Date.now(),
+      select: false,
+    },
+    startDates: {
+      type: [Date],
+      required: [true, 'A tour must have start dates'],
+    },
+    secret: {
+      type: Boolean,
+      default: false,
+    },
   },
-  duration: {
-    type: Number,
-    required: [true, 'A tour must have duration'],
-  },
-  maxGroupSize: {
-    type: Number,
-    required: [true, 'A tour must have max group size'],
-  },
-  difficulty: {
-    type: String,
-    required: [true, 'A tour must have difficulty'],
-  },
-  ratingAverage: {
-    type: Number,
-    default: 4.5,
-  },
-  ratingQuantity: {
-    type: Number,
-    default: 0,
-  },
-  price: {
-    type: Number,
-    required: [true, 'A tour must have price'],
-  },
-  priceDiscount: {
-    type: Number,
-  },
-  summary: {
-    type: String,
-    trim: true,
-    required: [true, 'A tour must have summery'],
-  },
-  description: {
-    type: String,
-    trim: true,
-    required: [true, 'A tour must have description'],
-  },
-  imageCover: {
-    type: String,
-    required: [true, 'A tour must have image cover'],
-  },
-  images: {
-    type: [String],
-  },
-  createAt: {
-    type: Date,
-    default: Date.now(),
-    select: false,
-  },
-  startDates: {
-    type: [Date],
-    required: [true, 'A tour must have start dates'],
-  },
+  {
+    toJSON: { virtuals: true },
+    toObject: {
+      virtuals: true,
+    },
+  }
+);
+
+tourSchema.virtual('durationWeeks').get(function () {
+  return this.duration / 7;
+});
+tourSchema.pre('save', (next) => {
+  this.slug = slugify(toString(this.name), { lower: true });
+  next();
+});
+
+tourSchema.pre('/^find/', (next) => {
+  this.find({ secret: { $ne: true } });
+  console.log('cas');
+  next();
+});
+tourSchema.post('find', (docs, next) => {
+  // console.log(docs);
+  next();
 });
 
 const Tour = mongoose.model('Tour', tourSchema);

@@ -4,7 +4,11 @@ const tourRoute = express.Router();
 
 tourRoute
   .route('/top-5-cheaps')
-  .get(tourController.top5cheap, tourController.getAlltours);
+  .get(tourController.aliastopTour, tourController.getAlltours);
+
+tourRoute.route('/getTourStats').get(tourController.getTourStats);
+tourRoute.route('/get-monthly-plan/:year').get(tourController.getMonthlyPlan);
+
 tourRoute
   .route('/')
   .get(tourController.getAlltours)
