@@ -80,21 +80,25 @@ const tourSchema = new mongoose.Schema(
 tourSchema.virtual('durationWeeks').get(function () {
   return this.duration / 7;
 });
-tourSchema.pre('save', (next) => {
+tourSchema.pre('save', function (next) {
   this.slug = slugify(toString(this.name), { lower: true });
   next();
 });
 
-tourSchema.pre('/^find/', (next) => {
+tourSchema.pre(/^find/, function (next) {
   this.find({ secret: { $ne: true } });
-  console.log('cas');
-  next();
-});
-tourSchema.post('find', (docs, next) => {
-  // console.log(docs);
   next();
 });
 
+tourSchema.post(/^find/, function (docs, next) {
+  // this.find({ secret: { $ne: true } });
+  // console.log(docs);
+  next();
+});
+tourSchema.pre('aggregate', function (next) {
+  this.pipeline().unshift({ $match: { secret: { $ne: true } } });
+  next();
+});
 const Tour = mongoose.model('Tour', tourSchema);
 
 module.exports = Tour;
