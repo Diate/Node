@@ -1,5 +1,6 @@
 const mongoose = require('mongoose');
 const slugify = require('slugify');
+const validator = require('validator');
 const tourSchema = new mongoose.Schema(
   {
     name: {
@@ -9,6 +10,7 @@ const tourSchema = new mongoose.Schema(
       unique: true,
       minlength: [10, 'The name must have more or equal 10 character'],
       maxlength: [50, 'The name must have less or equal 50 character'],
+      // validate: [validator.isAlpha, 'The name is only contain letter'],
     },
     slug: {
       type: String,
@@ -47,6 +49,13 @@ const tourSchema = new mongoose.Schema(
     },
     priceDiscount: {
       type: Number,
+      validate: {
+        validator: function (val) {
+          // this only work with create method not word with update (evenif have validator : true)
+          return val < this.price;
+        },
+        message: 'The discount {VALUE} is must low than the regular price',
+      },
     },
     summary: {
       type: String,
@@ -91,6 +100,7 @@ tourSchema.virtual('durationWeeks').get(function () {
   return this.duration / 7;
 });
 tourSchema.pre('save', function (next) {
+  // only work with save and create not work with update
   this.slug = slugify(toString(this.name), { lower: true });
   next();
 });
