@@ -3,6 +3,9 @@ const slugify = require('slugify');
 const validator = require('validator');
 const tourSchema = new mongoose.Schema(
   {
+    _id: {
+      type: String,
+    },
     name: {
       type: String,
       required: [true, 'A tour must have name'],
