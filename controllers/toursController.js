@@ -2,7 +2,6 @@ const Tour = require('./../models/tourModel');
 const APIfeatures = require('./../utils/APIfeatures');
 const catchAsync = require('../utils/catchAsync');
 const AppError = require('../utils/appError');
-const mongoose = require('mongoose');
 
 exports.aliastopTour = (req, res, next) => {
   req.query.limit = '5';
@@ -39,10 +38,8 @@ exports.createTour = catchAsync(async (req, res, next) => {
 });
 
 exports.getTour = catchAsync(async (req, res, next) => {
-  let tour = 0;
-  if (mongoose.isValidObjectId(req.params.id)) {
-    tour = await Tour.findById(req.params.id);
-  }
+  // const tour = await Tour.findOne({ _id: req.params.id });
+  const tour = await Tour.findById(req.params.id);
   if (!tour) {
     return next(new AppError('No tour found with that ID', 404));
   }

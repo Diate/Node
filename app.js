@@ -8,7 +8,7 @@ const globalErrorHandler = require('./controllers/errorController');
 const app = express();
 
 app.use(express.json());
-// app.use(morgan('dev'));
+app.use(morgan('dev'));
 
 if (process.env.NODE_ENV === 'development') {
   app.use(morgan('dev'));
@@ -17,7 +17,8 @@ app.use((req, res, next) => {
   req.requestTime = new Date().toISOString();
   next();
 });
-app.use(express.static('./public'));
+app.use(express.json());
+app.use(express.static(`${__dirname}/public`));
 
 app.use('/api/v1/tours', tourRoute);
 app.use('/api/v1/users', userRoute);
@@ -27,5 +28,4 @@ app.all('*', (req, res, next) => {
 });
 
 app.use(globalErrorHandler);
-
 module.exports = app;
