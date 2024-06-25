@@ -1,4 +1,4 @@
-const Tour = require('./../models/tourModel');
+const Tour = require('../models/tourModel');
 const APIfeatures = require('./../utils/APIfeatures');
 const catchAsync = require('../utils/catchAsync');
 const AppError = require('../utils/appError');
@@ -74,7 +74,7 @@ exports.deleteTour = catchAsync(async (req, res, next) => {
 
   res.status(204).json({
     status: 'success',
-    data: { tour },
+    data: 'Delete successfully',
   });
 });
 
