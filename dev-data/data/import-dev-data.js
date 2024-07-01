@@ -1,9 +1,9 @@
 const dotenv = require('dotenv');
-dotenv.config({ path: './config.env' });
 const fs = require('fs');
 const mongoose = require('mongoose');
 const Tour = require('./../../models/tourModel');
 
+dotenv.config({ path: '../../config.env' });
 const DB = process.env.DATABASE.replace(
   '<PASSWORD>',
   process.env.DATABASE_PASSWORD
@@ -18,9 +18,7 @@ mongoose
     console.log('DB connection successful!');
   });
 
-const tours = JSON.parse(
-  fs.readFileSync(`${__dirname}/tours-simple.json`, 'utf-8')
-);
+const tours = JSON.parse(fs.readFileSync(`${__dirname}/tours.json`, 'utf-8'));
 
 const importData = async () => {
   try {

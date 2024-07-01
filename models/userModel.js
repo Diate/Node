@@ -25,7 +25,7 @@ const userSchema = new mongoose.Schema({
     default: 'user',
     enum: {
       values: ['user', 'guide', 'lead-guide', 'admin'],
-      message: 'Role must either : user, guide, guide or admin',
+      message: 'Role must either : user, guide, lead-guide or admin',
     },
   },
   password: {
@@ -48,6 +48,7 @@ const userSchema = new mongoose.Schema({
   },
   PasswordChangeAt: {
     type: Date,
+    select: false,
   },
   PasswordResetToken: {
     type: String,
@@ -55,6 +56,19 @@ const userSchema = new mongoose.Schema({
   PasswordResetExpries: {
     type: Date,
   },
+  active: {
+    type: Boolean,
+    default: true,
+    select: false,
+  },
+});
+
+userSchema.pre('save', function (next) {
+  if (!this.isModified('password') || this.isNew) {
+    next();
+  }
+  this.PasswordChangeAt = Date.now() - 1000;
+  next();
 });
 
 userSchema.pre('save', async function (next) {
@@ -65,6 +79,22 @@ userSchema.pre('save', async function (next) {
   this.ConfirmPassword = undefined;
   next();
 });
+
+userSchema.pre(/^find/, function (next) {
+  this.find({ active: { $ne: false } });
+  next();
+});
+
+// userSchema.post('find', function (docs, next) {
+//   console.log(docs);
+//   docs.forEach((doc) => {
+//     doc.password = undefined;
+//     doc.ConfirmPassword = undefined;
+//     doc.PasswordChangeAt = undefined;
+//     doc.active = undefined;
+//   });
+//   next();
+// });
 
 userSchema.methods.correctPassword = async function (
   signinPassword,

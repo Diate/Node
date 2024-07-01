@@ -23,8 +23,18 @@ const handleValidatorErrorDb = (err) => {
 };
 
 const sendErrDev = (err, res) => {
+  const token = '';
+
+  const cookieOption = {
+    expires: new Date(Date.now() + 10000000 * 24 * 60 * 60 * 1000),
+
+    httpOnly: true,
+    secure: true,
+  };
+  res.cookie('jwt', token, cookieOption);
   res.status(err.statusCode).json({
     status: err.status,
+    token,
     error: err,
     message: err.message,
     stack: err.stack,
@@ -32,10 +42,20 @@ const sendErrDev = (err, res) => {
 };
 
 const sendErrPro = (err, res) => {
+  const token = '';
+
+  const cookieOption = {
+    expires: new Date(Date.now() + 10000000 * 24 * 60 * 60 * 1000),
+
+    httpOnly: true,
+    secure: true,
+  };
+  res.cookie('jwt', token, cookieOption);
   if (err.isOperational) {
     // send error define by dev to client
     res.status(err.statusCode).json({
       status: err.status,
+      token,
       message: err.message,
     });
   } else {
