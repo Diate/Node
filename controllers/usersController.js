@@ -3,6 +3,7 @@ const APIfeatures = require('./../utils/APIfeatures');
 const catchAsync = require('../utils/catchAsync');
 const AppError = require('../utils/appError');
 const authController = require('./authController');
+const factory = require('./handlerFactory');
 
 const filterObj = (obj, ...objFilter) => {
   const newObj = {};
@@ -12,17 +13,15 @@ const filterObj = (obj, ...objFilter) => {
   return newObj;
 };
 
-exports.getAllUser = catchAsync(async (req, res, next) => {
-  const users = await User.find();
+exports.getAllUser = factory.GetAll(User);
 
-  res.status(200).json({
-    status: 'success',
-    results: users.length,
-    data: {
-      users,
-    },
-  });
-});
+exports.getUser = factory.GetOne(User);
+
+exports.createUser = factory.CreateOne(User);
+
+exports.deleteUser = factory.DeleteOne(User);
+
+exports.updateUser = factory.UpdateOne(User);
 
 exports.updateMe = catchAsync(async (req, res, next) => {
   if (req.body.password || req.body.passwordConfirm) {
@@ -59,23 +58,3 @@ exports.deleteMe = catchAsync(async (req, res, next) => {
     message: 'Delete user successfully',
   });
 });
-exports.getUser = (req, res) => {
-  res.status(500).json({
-    status: 'Route not define',
-  });
-};
-exports.updateUser = (req, res) => {
-  res.status(500).json({
-    status: 'Route not define',
-  });
-};
-exports.createUser = (req, res) => {
-  res.status(500).json({
-    status: 'Route not define',
-  });
-};
-exports.deleteUser = (req, res) => {
-  res.status(500).json({
-    status: 'Route not define',
-  });
-};
