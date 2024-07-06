@@ -3,9 +3,7 @@ const catchAsync = require('../utils/catchAsync');
 const jwt = require('jsonwebtoken');
 const AppError = require('../utils/appError');
 const { promisify } = require('util');
-const email = require('../utils/email');
 const sendEmail = require('../utils/email');
-// const { use } = require('../app');
 const crypto = require('crypto');
 
 const authToken = (id) => {

@@ -10,12 +10,22 @@ tourRoute
   .get(tourController.aliastopTour, tourController.getAlltours);
 
 tourRoute.route('/getTourStats').get(tourController.getTourStats);
-tourRoute.route('/get-monthly-plan/:year').get(tourController.getMonthlyPlan);
+tourRoute
+  .route('/get-monthly-plan/:year')
+  .get(
+    authController.protect,
+    authController.restrictTo('admin', 'lead-guide', 'guide'),
+    tourController.getMonthlyPlan
+  );
 
 tourRoute
   .route('/')
-  .get(authController.protect, tourController.getAlltours)
-  .post(tourController.createTour);
+  .get(tourController.getAlltours)
+  .post(
+    authController.protect,
+    authController.restrictTo('admin', 'lead-guide'),
+    tourController.createTour
+  );
 
 tourRoute
   .route('/:id')

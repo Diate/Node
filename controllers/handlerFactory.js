@@ -4,7 +4,7 @@ const APIfeatures = require('./../utils/APIfeatures');
 
 exports.DeleteOne = (Model) => {
   return catchAsync(async (req, res, next) => {
-    const doc = await Model.findByIdAndDelete(req.params.id);
+    const doc = await Model.findOneAndDelete({ _id: req.params.id });
     if (!doc) {
       return next(new appError('No document found with that ID', 404));
     }
@@ -16,7 +16,7 @@ exports.DeleteOne = (Model) => {
 };
 exports.UpdateOne = (Model) => {
   return catchAsync(async (req, res, next) => {
-    const doc = await Model.findByIdAndUpdate(req.params.id, req.body, {
+    const doc = await Model.findOneAndUpdate({ _id: req.params.id }, req.body, {
       new: true,
       runValidators: true,
     });
@@ -61,7 +61,7 @@ exports.GetAll = (Model) => {
   return catchAsync(async (req, res, next) => {
     let filter = {};
     if (req.params.tourid) filter = { tour: req.params.tourid };
-    const features = new APIfeatures(Tour.find(filter), req.query)
+    const features = new APIfeatures(Model.find(filter), req.query)
       .filter()
       .sort()
       .limitFields()
