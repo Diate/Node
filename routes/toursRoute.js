@@ -36,5 +36,12 @@ tourRoute
     authController.restrictTo('admin', 'lead-guide'),
     tourController.deleteTour
   );
+tourRoute
+  .route('/tour-within/:distance/center/:latlng/unit/:unit')
+  .get(tourController.getTourWithin);
+
+tourRoute
+  .route('/distances/:latlng/unit/:unit')
+  .get(tourController.getDistances);
 
 module.exports = tourRoute;
