@@ -3,11 +3,11 @@ const APIfeatures = require('./../utils/APIfeatures');
 const catchAsync = require('../utils/catchAsync');
 const factory = require('./handlerFactory');
 const AppError = require('../utils/appError');
-
+const slugify = require('slugify');
 exports.aliastopTour = (req, res, next) => {
   req.query.limit = '5';
-  req.query.sort = '-ratingsAverage,price';
-  req.query.fields = 'name,price,ratingsAverage,summary,difficulty';
+  req.query.sort = '-ratingAverage,price';
+  req.query.fields = 'name,price,ratingAverage,summary,difficulty';
   next();
 };
 
@@ -18,6 +18,23 @@ exports.createTour = factory.CreateOne(Tour);
 exports.getTour = factory.GetOne(Tour, { path: 'reviews' });
 
 exports.updateTour = factory.UpdateOne(Tour);
+
+exports.updateTourSlug = catchAsync(async (req, res, next) => {
+  const tour = await Tour.findById(req.params.id);
+  const slg = slugify(tour.name, { lower: true });
+  const r = { slug: slg };
+  const doc = await Tour.findOneAndUpdate({ _id: req.params.id }, r, {
+    new: true,
+    runValidators: true,
+  });
+  if (!doc) {
+    return next(new appError('No document found with that ID', 404));
+  }
+  res.status(200).json({
+    status: 'success',
+    data: doc,
+  });
+});
 
 exports.deleteTour = factory.DeleteOne(Tour);
 

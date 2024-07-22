@@ -1,6 +1,5 @@
 const mongoose = require('mongoose');
 const slugify = require('slugify');
-const validator = require('validator');
 const tourSchema = new mongoose.Schema(
   {
     name: {
@@ -40,8 +39,6 @@ const tourSchema = new mongoose.Schema(
     ratingQuantity: {
       type: Number,
       default: 0,
-      min: [0, 'The rating must above than 0'],
-      max: [5, 'The rating must small than 5'],
     },
     price: {
       type: Number,
@@ -135,6 +132,7 @@ tourSchema.virtual('reviews', {
 tourSchema.pre('save', function (next) {
   // only work with save and create not work with update
   this.slug = slugify(toString(this.name), { lower: true });
+
   next();
 });
 
@@ -145,18 +143,20 @@ tourSchema.pre('save', function (next) {
 //   next();
 // });
 
+// tourSchema.pre(/^find/, function (next) {
+//   next();
+// });
 tourSchema.pre(/^find/, function (next) {
-  this.where({ secret: { $ne: true } });
-  next();
-});
-tourSchema.pre(/^find/, function (next) {
-  this.populate((path = 'guides'), (select = '-__v'));
+  this.find({ secret: { $ne: true } });
+  this.populate([
+    { path: 'guides', select: '-__v' },
+    { path: 'reviews', select: '-__v' },
+  ]);
+
+  console.log(this.reviews);
   next();
 });
 
-tourSchema.post(/^find/, function (docs, next) {
-  next();
-});
 // tourSchema.pre('aggregate', function (next) {
 //   this.pipeline().unshift({ $match: { secret: { $ne: true } } });
 //   next();

@@ -40,7 +40,7 @@ reviewSchema.pre(/^find/, function (next) {
   this.select('-__v');
   this.populate([
     // { path: 'tour', select: '-__v -secret' },
-    { path: 'user', select: 'name' },
+    { path: 'user', select: 'name photo' },
   ]);
   next();
 });

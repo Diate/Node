@@ -1,3 +1,4 @@
+const path = require('path');
 const express = require('express');
 const morgan = require('morgan');
 const rateLimits = require('express-rate-limit');
@@ -9,13 +10,17 @@ const hpp = require('hpp');
 const tourRoute = require('./routes/toursRoute');
 const userRoute = require('./routes/usersRoute');
 const reviewRoute = require('./routes/reviewRoute');
+const viewRoute = require('./routes/viewRoute');
 const AppError = require('./utils/appError');
 const globalErrorHandler = require('./controllers/errorController');
 
 const app = express();
+app.set('view engine', 'pug');
+app.set('views', path.join(__dirname, 'views'));
+app.use(express.static(path.join(__dirname, 'public')));
 app.use(helmet());
 app.use(express.json());
-// app.use(morgan('dev'));
+
 const limits = rateLimits({
   windowMs: 60 * 60 * 1000, // 15 minutes
   max: 100, // limit each IP to 100 requests per windowMs
@@ -53,8 +58,8 @@ app.use((req, res, next) => {
 });
 
 app.use(express.json());
-app.use(express.static(`${__dirname}/public`));
 
+app.use('/', viewRoute);
 app.use('/api/v1/tours', tourRoute);
 app.use('/api/v1/users', userRoute);
 app.use('/api/v1/reviews', reviewRoute);

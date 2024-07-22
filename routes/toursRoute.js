@@ -26,7 +26,7 @@ tourRoute
     authController.restrictTo('admin', 'lead-guide'),
     tourController.createTour
   );
-
+tourRoute.route('/update/:id').patch(tourController.updateTourSlug);
 tourRoute
   .route('/:id')
   .get(tourController.getTour)
