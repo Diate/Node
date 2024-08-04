@@ -6,6 +6,7 @@ const helmet = require('helmet');
 const mongosanity = require('express-mongo-sanitize');
 const xss = require('xss-clean');
 const hpp = require('hpp');
+const cookie_parser = require('cookie-parser');
 
 const tourRoute = require('./routes/toursRoute');
 const userRoute = require('./routes/usersRoute');
@@ -19,6 +20,25 @@ app.set('view engine', 'pug');
 app.set('views', path.join(__dirname, 'views'));
 app.use(express.static(path.join(__dirname, 'public')));
 app.use(helmet());
+app.use(
+  helmet.contentSecurityPolicy({
+    directives: {
+      defaultSrc: ["'self'", 'data:', 'blob:'],
+
+      fontSrc: ["'self'", 'https:', 'data:'],
+
+      scriptSrc: ["'self'", 'unsafe-inline'],
+
+      scriptSrc: ["'self'", 'https://*.cloudflare.com'],
+
+      scriptSrcElem: ["'self'", 'https:', 'https://*.cloudflare.com'],
+
+      styleSrc: ["'self'", 'https:', 'unsafe-inline'],
+
+      connectSrc: ["'self'", 'data', 'https://*.cloudflare.com'],
+    },
+  })
+);
 app.use(express.json());
 
 const limits = rateLimits({
@@ -34,6 +54,7 @@ if (process.env.NODE_ENV === 'development') {
 
 app.use('/api/', limits);
 
+app.use(cookie_parser());
 // Data sanitization against NoSQL query injection
 app.use(mongosanity());
 // Data sanitization against XSS
@@ -54,6 +75,7 @@ app.use(
 
 app.use((req, res, next) => {
   req.requestTime = new Date().toISOString();
+  console.log(req.cookies);
   next();
 });
 

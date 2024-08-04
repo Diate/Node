@@ -78,13 +78,21 @@ exports.updatePassword = catchAsync(async (req, res, next) => {
   if (!iscorrect) {
     return next(new AppError('Your current password is wrong', 401));
   }
-  console.log(user);
   user.password = newPassword;
   user.ConfirmPassword = confirmPassword;
-  console.log(user);
   await user.save();
-  CreateSendToken(user, 201, res);
+  CreateSendToken(user, 20, res);
 });
+
+exports.logout = (req, res) => {
+  res.cookie('jwt', 'loggedout', {
+    expires: new Date(Date.now() + 10 * 1000),
+    httpOnly: true,
+  });
+  res
+    .status(200)
+    .json({ status: 'success', message: 'logged out successfully' });
+};
 
 exports.protect = catchAsync(async (req, res, next) => {
   let token;
@@ -93,6 +101,8 @@ exports.protect = catchAsync(async (req, res, next) => {
     req.headers.authorization.startsWith('Bearer')
   ) {
     token = req.headers.authorization.split(' ')[1];
+  } else if (req.cookies.jwt) {
+    token = req.cookies.jwt;
   }
   if (!token) {
     return next(
@@ -114,9 +124,33 @@ exports.protect = catchAsync(async (req, res, next) => {
       new AppError('The password recently change, Please login again!', 401)
     );
   }
+  res.locals.user = freshUser;
   req.user = freshUser;
   next();
 });
+
+exports.isLoggedIn = async (req, res, next) => {
+  try {
+    if (req.cookies.jwt) {
+      const decoded = await promisify(jwt.verify)(
+        req.cookies.jwt,
+        process.env.JWT_SECRET
+      );
+      const freshUser = await User.findById(decoded.id);
+      if (!freshUser) {
+        return next();
+      }
+      if (!freshUser.changePasswordAfter(decoded.iat)) {
+        return next();
+      }
+      res.locals.user = freshUser;
+      return next();
+    }
+  } catch (err) {
+    return next();
+  }
+  next();
+};
 
 exports.restrictTo = (...roles) => {
   return (req, res, next) => {

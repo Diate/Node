@@ -153,7 +153,6 @@ tourSchema.pre(/^find/, function (next) {
     { path: 'reviews', select: '-__v' },
   ]);
 
-  console.log(this.reviews);
   next();
 });
 

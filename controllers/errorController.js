@@ -7,7 +7,6 @@ const handleCastErrorDb = (err) => {
 
 const handleDuplicateFieldsrDb = (err) => {
   const regex = /\b(\w+)\s*:\s*"([^"]*)"/g;
-  console.log();
   let msg = err.errorResponse.errmsg.match(regex);
   const message = `Duplicate field value: '${msg}'. Please use another value`;
   return new AppError(message, 400);
@@ -22,50 +21,70 @@ const handleValidatorErrorDb = (err) => {
   return new AppError(message, 400);
 };
 
-const sendErrDev = (err, res) => {
-  const token = '';
+const sendErrDev = (err, req, res) => {
+  if (req.originalUrl.startsWith('/api')) {
+    // API
+    const token = '';
 
-  const cookieOption = {
-    expires: new Date(Date.now() + 10000000 * 24 * 60 * 60 * 1000),
+    const cookieOption = {
+      expires: new Date(Date.now() + 10000000 * 24 * 60 * 60 * 1000),
 
-    httpOnly: true,
-    secure: true,
-  };
-  res.cookie('jwt', token, cookieOption);
-  res.status(err.statusCode).json({
-    status: err.status,
-    token,
-    error: err,
-    message: err.message,
-    stack: err.stack,
-  });
-};
-
-const sendErrPro = (err, res) => {
-  const token = '';
-
-  const cookieOption = {
-    expires: new Date(Date.now() + 10000000 * 24 * 60 * 60 * 1000),
-
-    httpOnly: true,
-    secure: true,
-  };
-  res.cookie('jwt', token, cookieOption);
-  if (err.isOperational) {
-    // send error define by dev to client
+      httpOnly: true,
+      secure: true,
+    };
+    res.cookie('jwt', token, cookieOption);
     res.status(err.statusCode).json({
       status: err.status,
       token,
+      error: err,
       message: err.message,
+      stack: err.stack,
     });
   } else {
-    // don't send error system or another anonymus cause for client
+    // RENDERED WEBSITE
     console.log('ERROR:', err);
-    res.status(500).json({
-      status: err.status,
-      message: 'Something went wrong!',
+    res.status(err.statusCode).render('error', {
+      title: 'Something went wrong',
+      msg: err.message,
     });
   }
+};
+
+const sendErrPro = (err, req, res) => {
+  console.log(req.originalUrl);
+  if (req.originalUrl.startsWith('/api')) {
+    // API
+    const token = '';
+
+    const cookieOption = {
+      expires: new Date(Date.now() + 10000000 * 24 * 60 * 60 * 1000),
+
+      httpOnly: true,
+      secure: true,
+    };
+    res.cookie('jwt', token, cookieOption);
+    if (err.isOperational) {
+      // send error define by dev to client
+      return res.status(err.statusCode).json({
+        status: err.status,
+        token,
+        message: err.message,
+      });
+    }
+    // } else {
+    //   // don't send error system or another anonymus cause for client
+    //   console.log('ERROR:', err);
+    //   return res.status(500).json({
+    //     status: err.status,
+    //     message: 'Something went wrong!',
+    //   });
+    // }
+  }
+  console.log('ERROR:', err);
+  return res.status(err.statusCode).render('error', {
+    title: 'Something went wrong',
+    msg: 'Please try again',
+  });
 };
 
 const handleJWTError = () => {
@@ -80,7 +99,7 @@ module.exports = (err, req, res, next) => {
   err.statusCode = err.statusCode || 500;
   err.status = err.status || 'error';
   if (process.env.NODE_ENV === 'development') {
-    sendErrDev(err, res);
+    sendErrDev(err, req, res);
   } else if (process.env.NODE_ENV.trim() === 'production') {
     let error = { ...err };
     error.message = err.message;
@@ -100,6 +119,6 @@ module.exports = (err, req, res, next) => {
     if (err.name === 'TokenExpiredError') {
       error = handleJWTExpiredError();
     }
-    sendErrPro(error, res);
+    sendErrPro(error, req, res);
   }
 };
