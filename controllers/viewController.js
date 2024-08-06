@@ -1,4 +1,6 @@
+const { use } = require('bcrypt/promises');
 const Tour = require('../models/tourModel');
+const User = require('../models/userModel');
 const AppError = require('../utils/appError');
 const catchAsync = require('../utils/catchAsync');
 
@@ -27,5 +29,20 @@ exports.getLoginForm = catchAsync(async (req, res, next) => {
 exports.getAccount = catchAsync(async (req, res, next) => {
   res.status(200).render('account', {
     title: 'Your Account',
+  });
+});
+
+exports.updateUserData = catchAsync(async (req, res, next) => {
+  const updateduser = await User.findByIdAndUpdate(
+    req.user.id,
+    {
+      name: req.body.name,
+      email: req.body.email,
+    },
+    { new: true, runValidators: true }
+  );
+  res.status(201).render('account', {
+    title: 'Your Account',
+    user: updateduser,
   });
 });

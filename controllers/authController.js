@@ -14,7 +14,6 @@ const authToken = (id) => {
 
 const CreateSendToken = (user, statusCode, res) => {
   const token = authToken(user._id);
-
   const cookieOption = {
     expires: new Date(
       Date.now() + process.env.JWT_COOKIE_EXPIRE * 24 * 60 * 60 * 1000
@@ -29,13 +28,17 @@ const CreateSendToken = (user, statusCode, res) => {
   user.active = undefined;
   user.PasswordChangeAt = undefined;
   res.cookie('jwt', token, cookieOption);
-  res.status(statusCode).json({
-    status: 'success',
-    token,
-    data: {
-      user,
-    },
-  });
+  try {
+    res.status(statusCode).json({
+      status: 'success',
+      token,
+      data: {
+        user,
+      },
+    });
+  } catch (err) {
+    console.log(err);
+  }
 };
 
 exports.signup = catchAsync(async (req, res, next) => {
@@ -81,17 +84,21 @@ exports.updatePassword = catchAsync(async (req, res, next) => {
   user.password = newPassword;
   user.ConfirmPassword = confirmPassword;
   await user.save();
-  CreateSendToken(user, 20, res);
+  CreateSendToken(user, 200, res);
 });
 
 exports.logout = (req, res) => {
-  res.cookie('jwt', 'loggedout', {
-    expires: new Date(Date.now() + 10 * 1000),
-    httpOnly: true,
-  });
-  res
-    .status(200)
-    .json({ status: 'success', message: 'logged out successfully' });
+  try {
+    res.cookie('jwt', 'loggedout', {
+      expires: new Date(Date.now() + 10 * 1000),
+      httpOnly: true,
+    });
+    res
+      .status(200)
+      .json({ status: 'success', message: 'logged out successfully' });
+  } catch (err) {
+    console.log(err);
+  }
 };
 
 exports.protect = catchAsync(async (req, res, next) => {

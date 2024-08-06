@@ -54,6 +54,7 @@ if (process.env.NODE_ENV === 'development') {
 
 app.use('/api/', limits);
 
+app.use(express.urlencoded({ extended: true, limit: '10kb' }));
 app.use(cookie_parser());
 // Data sanitization against NoSQL query injection
 app.use(mongosanity());
